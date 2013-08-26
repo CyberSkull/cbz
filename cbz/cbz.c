@@ -23,7 +23,7 @@ int main(int argc, const char * argv[])
 	struct stat file_stats;
 	pid_t starting_pid, fork_pid;
 	int execresult;
-	char archive[NAME_MAX];
+	char archive[NAME_MAX + 1];
 	
 	starting_pid = getpid();
 	THEBUG("Parent PID is %d.\n", starting_pid);
