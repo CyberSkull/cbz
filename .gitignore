@@ -1,4 +1,5 @@
 Build
 *.cb[7rz]
 test/
+*.xcodeproj/xcuserdata/*
 *.xcuserstate
