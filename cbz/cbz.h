@@ -11,11 +11,16 @@
 
 #endif
 
-#define ZIP							"zip"
-#define ZIP_FLAG_DELETE_OGRIGINAL	"m"
-#define ZIP_FLAGS					"rT9"
-#define ZIP_FLAG_EXCLUDE			"-x"
-#define ZIP_EXCLUDE					"\"*.DS_Store" "*[Tt]humbs.db\""
-#define FILE_EXTENSION				"cbz"
+
+#ifdef DEBUG
+#define THEBUG(string, args...) printf(string, args)
+#else
+#define THEBUG(string, args...) //empty macro for no action
+#endif
+
+#define ZIP				"zip"
+#define ZIP_FLAGS		"-mrT9"
+#define ZIP_EXCLUDE		"-x \"*.DS_Store\" \"*[Tt]humbs.db\" \"Icon?\""
+#define FILE_EXTENSION	".cbz"
 
 int main(int argc, const char * argv[]);
