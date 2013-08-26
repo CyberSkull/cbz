@@ -13,7 +13,7 @@
 
 
 #ifdef DEBUG
-#define THEBUG(string, args...) printf(string, args)
+#define THEBUG(string, args...) fprintf(stderr, string, args)
 #else
 #define THEBUG(string, args...) //empty macro for no action
 #endif

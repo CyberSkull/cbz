@@ -31,7 +31,7 @@ int main(int argc, const char * argv[])
 	if(argc == 1)
 	{
 		printf("USAGE: cbz comicdir1 [comicdir2\u2026]\n");
-		exit(1);
+		return 0;
 	}
 	
 	for (i = 1; i < argc; i++)
@@ -44,13 +44,13 @@ int main(int argc, const char * argv[])
 			continue;
 		}
 
-		if(!(file_stats.st_mode & S_IFDIR))
+		//if != directory,
+		THEBUG("Directory test: %d\n", S_ISDIR(file_stats.st_mode));
+		if(S_ISDIR(file_stats.st_mode) == 0)
 		{
-			printf("\a\"%s\" is not a directory, skipping.\n", argv[i]);
+			fprintf(stderr, "\a\"%s\" is not a directory, skipping.\n", argv[i]);
 			continue;
 		}
-		
-		
 		
 		//truncates the file name if argument.cbz is bigger than NAME_MAX.
 		if ((strlen(argv[i]) + strlen(FILE_EXTENSION) + 1) < NAME_MAX)
@@ -68,15 +68,15 @@ int main(int argc, const char * argv[])
 			case 0: //exec to zip
 				THEBUG("%d: '%s' '%s' '%s' '%s' '%s'\n", getpid(), ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE);
 				errno = 0;
-				execlp(ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE, NULL);
+				execlp(ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE, (char *)0);	//(char *)0 instead of NULL for compatibility. See `man execl`.
 				THEBUG("%d: errno is %d\n", getpid(), errno);
 				perror("execlp");
-				exit(1);
+				exit(errno);
 				break;
 				
 			case -1:
 				perror("fork() failed");
-				exit(2);
+				exit(errno);
 				break;
 				
 			default:
