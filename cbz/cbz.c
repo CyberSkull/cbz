@@ -40,6 +40,7 @@ int main(int argc, const char * argv[])
 		execresult = 0;
 		
 		if (lstat(argv[i], &file_stats) != 0) {
+			fprintf(stderr, "\a");
 			perror(argv[i]);
 			continue;
 		}
@@ -53,10 +54,10 @@ int main(int argc, const char * argv[])
 		}
 		
 		//truncates the file name if argument.cbz is bigger than NAME_MAX.
-		if ((strlen(argv[i]) + strlen(FILE_EXTENSION) + 1) < NAME_MAX)
+		if ((strlen(argv[i]) + strlen(FILE_EXTENSION)) <= NAME_MAX)
 			strcpy(archive, argv[i]);
 		else
-			strncpy(archive, argv[i], NAME_MAX - strlen(FILE_EXTENSION) - 1);
+			strncpy(archive, argv[i], NAME_MAX - strlen(FILE_EXTENSION));
 		
 		strcat(archive, FILE_EXTENSION);
 		
