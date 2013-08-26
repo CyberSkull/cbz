@@ -21,8 +21,8 @@ int main(int argc, const char * argv[])
 {
 	unsigned int i;
 	struct stat file_stats;
-	pid_t starting_pid, fork_pid;
-	int execresult;
+	pid_t starting_pid, fork_pid, wait_pid;
+	int wait_result;
 	char archive[NAME_MAX + 1];
 	
 	starting_pid = getpid();
@@ -37,7 +37,7 @@ int main(int argc, const char * argv[])
 	for (i = 1; i < argc; i++)
 	{
 		errno = 0;
-		execresult = 0;
+		wait_result = 0;
 		
 		if (lstat(argv[i], &file_stats) != 0) {
 			fprintf(stderr, "\a");
@@ -61,30 +61,38 @@ int main(int argc, const char * argv[])
 		
 		strcat(archive, FILE_EXTENSION);
 		
-				
 		errno = 0;
-		fork_pid = fork();
 		
-		switch (fork_pid) {
-			case 0: //exec to zip
-				THEBUG("%d: '%s' '%s' '%s' '%s' '%s'\n", getpid(), ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE);
-				errno = 0;
-				execlp(ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE, (char *)0);	//(char *)0 instead of NULL for compatibility. See `man execl`.
-				THEBUG("%d: errno is %d\n", getpid(), errno);
-				perror("execlp");
-				exit(errno);
-				break;
-				
-			case -1:
-				perror("fork() failed");
-				exit(errno);
-				break;
-				
-			default:
-				wait(&execresult);
-				THEBUG("Child %d finished %ssucessfully.\n", fork_pid, WIFEXITED(execresult) ? "" : "un");	//This probably isn't right.
-				break;
+		if ( (fork_pid = fork()) == 0)
+		{
+			THEBUG("%d: '%s' '%s' '%s' '%s' '%s'\n", getpid(), ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE);
+			errno = 0;
+			execlp(ZIP, ZIP_FLAGS, archive, argv[i], ZIP_EXCLUDE, (char *)0);	//(char *)0 instead of NULL for compatibility. See `man execl`.
+			THEBUG("%d: errno is %d\n", getpid(), errno);
+			perror("execlp");
+			exit(errno);
 		}
+		
+		if (fork_pid == -1)
+		{
+			perror("fork() failed");
+			exit(errno);
+		}
+		
+		THEBUG("%d: fork() returned %d.\n", getpid(), fork_pid);
+		
+		errno = 0;
+		if( (wait_pid = wait(&wait_result)) == -1 || errno != 0)
+		{
+			perror("wait");
+			THEBUG("errno is %d, wait returned %d.\n", errno, wait_pid);
+			exit(errno);
+		}
+		else
+		{
+			THEBUG("Child %d finished %ssucessfully.\n", fork_pid, WIFEXITED(wait_result) ? "" : "un");	//This probably isn't right.
+		}
+		
 	}
 
 	return 0;
